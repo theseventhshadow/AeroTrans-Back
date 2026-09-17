@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ms-aerotrans-bff
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${TENANT_ID:00000000-0000-0000-0000-000000000000}/v2.0
+          audiences: ${API_AUDIENCE:api://aerotrans-api}
+
+microservices:
+  transfers:
+    url: ${TRANSFERS_URL:http://localhost:8081}
+  catalog:
+    url: ${CATALOG_URL:http://localhost:8082}
+
+logging:
+  level:
+    org.springframework.security: DEBUG
