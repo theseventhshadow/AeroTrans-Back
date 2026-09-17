@@ -6,6 +6,7 @@ public class TransferRequest {
     private Long zonaId;
     private Long categoriaId;
     private String fechaServicio;
+    private String clienteOid;
 
     public TransferRequest() {
     }
@@ -56,5 +57,13 @@ public class TransferRequest {
 
     public void setFechaServicio(String fechaServicio) {
         this.fechaServicio = fechaServicio;
+    }
+
+    public String getClienteOid() {
+        return clienteOid;
+    }
+
+    public void setClienteOid(String clienteOid) {
+        this.clienteOid = clienteOid;
     }
 }

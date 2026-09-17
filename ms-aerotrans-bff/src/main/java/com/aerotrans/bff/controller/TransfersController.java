@@ -42,7 +42,10 @@ public class TransfersController {
     }
 
     @PostMapping("/transfers")
-    public Mono<ResponseEntity<TransferResponse>> createTransfer(@RequestBody TransferRequest request) {
+    public Mono<ResponseEntity<TransferResponse>> createTransfer(@RequestBody TransferRequest request,
+                                                                  Authentication authentication) {
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        request.setClienteOid(extractClienteOid(jwt));
         return transfersClient.createTransfer(request)
             .map(ResponseEntity::ok);
     }
