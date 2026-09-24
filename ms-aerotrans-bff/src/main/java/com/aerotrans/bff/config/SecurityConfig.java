@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.GET, "/api/catalog/**").authenticated()
                 .pathMatchers(HttpMethod.POST, "/api/catalog/**").hasAuthority("ROLE_ADMINISTRADOR")
                 .pathMatchers(HttpMethod.PUT, "/api/catalog/**").hasAnyAuthority("ROLE_OPERADOR", "ROLE_ADMINISTRADOR")
+                .pathMatchers(HttpMethod.DELETE, "/api/catalog/**").hasAuthority("ROLE_ADMINISTRADOR")
                 .pathMatchers(HttpMethod.PUT, "/api/transfers/{id}/status").hasAnyAuthority("ROLE_OPERADOR", "ROLE_ADMINISTRADOR")
                 .anyExchange().authenticated()
             )

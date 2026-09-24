@@ -25,6 +25,11 @@ public class CategoryService {
                 .toList();
     }
 
+    public CategoryResponse findById(Long id) {
+        return toResponse(categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + id)));
+    }
+
     @Transactional
     public CategoryResponse create(CategoryRequest request) {
         Category category = new Category(
@@ -42,6 +47,14 @@ public class CategoryService {
         category.setCapacidadPasajeros(request.capacidadPasajeros());
         category.setCapacidadMaletas(request.capacidadMaletas());
         return toResponse(category);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        if (!categoryRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Category not found: " + id);
+        }
+        categoryRepository.deleteById(id);
     }
 
     private CategoryResponse toResponse(Category category) {
