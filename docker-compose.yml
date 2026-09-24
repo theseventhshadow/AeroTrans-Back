@@ -1,0 +1,85 @@
+services:
+  bff:
+    build:
+      context: ./ms-aerotrans-bff
+    image: aerotrans/bff:latest
+    ports:
+      - "${BFF_PORT:-8080}:8080"
+    environment:
+      SERVER_PORT: 8080
+      CATALOGS_BASE_URL: http://catalogs:8080
+      TRANSFERS_BASE_URL: http://transfers:8080
+    depends_on:
+      catalogs:
+        condition: service_started
+      transfers:
+        condition: service_started
+    restart: unless-stopped
+
+  catalogs:
+    build:
+      context: ./ms-aerotrans-catalogs
+    image: aerotrans/catalogs:latest
+    ports:
+      - "${CATALOGS_PORT:-8081}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://catalogs-db:5432/${CATALOGS_DB_NAME:-catalogs}
+      SPRING_DATASOURCE_USERNAME: ${CATALOGS_DB_USER:-catalogs}
+      SPRING_DATASOURCE_PASSWORD: ${CATALOGS_DB_PASSWORD:?Define CATALOGS_DB_PASSWORD in .env or the shell environment}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${CATALOGS_JPA_DDL_AUTO:-update}
+    depends_on:
+      catalogs-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  transfers:
+    build:
+      context: ./ms-aerotrans-transfers
+    image: aerotrans/transfers:latest
+    ports:
+      - "${TRANSFERS_PORT:-8082}:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://transfers-db:5432/${TRANSFERS_DB_NAME:-transfers}
+      SPRING_DATASOURCE_USERNAME: ${TRANSFERS_DB_USER:-transfers}
+      SPRING_DATASOURCE_PASSWORD: ${TRANSFERS_DB_PASSWORD:?Define TRANSFERS_DB_PASSWORD in .env or the shell environment}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${TRANSFERS_JPA_DDL_AUTO:-update}
+    depends_on:
+      transfers-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  catalogs-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${CATALOGS_DB_NAME:-catalogs}
+      POSTGRES_USER: ${CATALOGS_DB_USER:-catalogs}
+      POSTGRES_PASSWORD: ${CATALOGS_DB_PASSWORD:?Define CATALOGS_DB_PASSWORD in .env or the shell environment}
+    volumes:
+      - catalogs-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CATALOGS_DB_USER:-catalogs} -d ${CATALOGS_DB_NAME:-catalogs}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  transfers-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${TRANSFERS_DB_NAME:-transfers}
+      POSTGRES_USER: ${TRANSFERS_DB_USER:-transfers}
+      POSTGRES_PASSWORD: ${TRANSFERS_DB_PASSWORD:?Define TRANSFERS_DB_PASSWORD in .env or the shell environment}
+    volumes:
+      - transfers-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TRANSFERS_DB_USER:-transfers} -d ${TRANSFERS_DB_NAME:-transfers}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  catalogs-db-data:
+  transfers-db-data:
